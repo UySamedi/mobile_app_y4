@@ -1,50 +1,172 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
   var message = ''.obs;
+  // messageType: 'success' | 'error' | '' (empty)
+  var messageType = ''.obs;
   var token = ''.obs;
   var user = {}.obs;
 
-  final String baseUrl = "http://localhost:6001/api/v1";
+  // Dynamic base URL based on platform
+  late String baseUrl;
+  final GetStorage box = GetStorage();
+
+  @override
+  void onInit() {
+    super.onInit();
+    // For Android emulator: 10.0.2.2, for other platforms: localhost
+    if (Platform.isAndroid) {
+      baseUrl = "http://10.0.2.2:6001/api/v1";
+    } else {
+      baseUrl = "http://localhost:6001/api/v1";
+    }
+    print('🔗 Using baseUrl: $baseUrl');
+
+    // Restore token and user from storage if available
+    final storedToken = box.read('token') ?? '';
+    final storedUser = box.read('user') ?? {};
+    if (storedToken != null && storedToken.toString().isNotEmpty) {
+      token.value = storedToken.toString();
+      user.value = Map<String, dynamic>.from(storedUser);
+      print('🔁 Restored token and user from storage');
+    }
+  }
+
+  /// Validate stored token by calling a lightweight protected endpoint (/homes).
+  /// Returns true when token is valid (HTTP 200). If invalid (401/403) it clears storage.
+  Future<bool> validateToken() async {
+    final storedToken = box.read('token') ?? '';
+    if (storedToken == null || storedToken.toString().isEmpty) {
+      return false;
+    }
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${storedToken.toString()}'
+      };
+      final res = await http
+          .get(Uri.parse('$baseUrl/homes'), headers: headers)
+          .timeout(const Duration(seconds: 8));
+
+      if (res.statusCode == 200) {
+        // token looks valid
+        token.value = storedToken.toString();
+        final storedUser = box.read('user') ?? {};
+        user.value = Map<String, dynamic>.from(storedUser);
+        return true;
+      } else if (res.statusCode == 401 || res.statusCode == 403) {
+        // invalid token - clear storage
+        box.remove('token');
+        box.remove('user');
+        token.value = '';
+        user.value = {};
+        print('🔒 Token invalid (status ${res.statusCode}) - cleared stored credentials');
+        return false;
+      } else {
+        // Other status codes (e.g., 5xx) — keep stored credentials to allow offline
+        print('⚠️ Token validation returned status ${res.statusCode} — keeping stored token');
+        token.value = storedToken.toString();
+        final storedUser = box.read('user') ?? {};
+        user.value = Map<String, dynamic>.from(storedUser);
+        return true;
+      }
+    } catch (e) {
+      print('⚠️ Token validation error (network?): $e');
+      // Network error: treat token as valid to avoid forcing login when offline or server unreachable
+      token.value = storedToken.toString();
+      final storedUser = box.read('user') ?? {};
+      user.value = Map<String, dynamic>.from(storedUser);
+      return true;
+    }
+  }
 
   /// LOGIN
   Future<bool> login(String email, String password) async {
     isLoading.value = true;
     message.value = '';
+    messageType.value = '';
 
     try {
+      print('🔗 API URL: $baseUrl/auth/login');
+      print('📤 Login Request: email=$email');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Connection timeout. Server not responding.');
+        },
       );
+
+      print('📍 Login Response Status: ${response.statusCode}');
+      print('📍 Login Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
-        token.value = data['data']['access_token'];
-        user.value = data['data']['user'];
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final accessToken = data['data']?['access_token'] ?? data['access_token'] ?? '';
+        final userData = data['data']?['user'] ?? data['user'] ?? {};
+        
+        token.value = accessToken;
+        user.value = userData;
+
+        // Persist token and user
+        box.write('token', token.value);
+        // user is an RxMap; convert to a plain Map before writing
+        box.write('user', Map<String, dynamic>.from(user));
+
+        message.value = data['message'] ?? 'Login successful';
+        messageType.value = 'success';
         isLoading.value = false;
+        
+        print('✅ Login Successful');
+        print('👤 User: $userData');
+        print('🔐 Token Length: ${token.value.length}');
+        
+        // Navigate to main navigation after successful login
+        Future.delayed(const Duration(milliseconds: 500), () {
+          print('🚀 Navigating to /main');
+          Get.offAllNamed('/main');
+        });
         return true;
       } else {
-        message.value = data['message'] ?? 'Login failed';
+        message.value = data['message'] ?? 'Login failed (Status: ${response.statusCode})';
+        messageType.value = 'error';
         isLoading.value = false;
+        print('❌ Login Failed: ${response.statusCode}');
+        print('📝 Response: $data');
         return false;
       }
-    } catch (e) {
-      message.value = 'Error: $e';
+    } on TimeoutException catch (e) {
+      message.value = 'Connection timeout. Make sure the backend server is running.';
+      messageType.value = 'error';
       isLoading.value = false;
+      print('⏱️ Timeout: $e');
+      return false;
+    } catch (e) {
+      message.value = 'Error: Unable to connect to server. Is it running?';
+      messageType.value = 'error';
+      isLoading.value = false;
+      print('⚠️ Login Exception: $e');
       return false;
     }
   }
 
   /// REGISTER
-  Future<void> register(String fullName, String email, String password, String phone) async {
+  Future<void> register(String fullName, String email, String password, String phoneNumber) async {
     isLoading.value = true;
     message.value = '';
+    messageType.value = '';
 
     try {
       final response = await http.post(
@@ -54,19 +176,35 @@ class AuthController extends GetxController {
           "fullName": fullName,
           "email": email,
           "password": password,
-          "phone": phone,
+          "phoneNumber": phoneNumber,
         }),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Connection timeout. Server not responding.');
+        },
       );
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         message.value = data['message'] ?? 'Registration successful';
+        messageType.value = 'success';
+        // Navigate to login screen after successful registration
+        await Future.delayed(const Duration(seconds: 1));
+        Get.offAllNamed('/login');
       } else {
         message.value = data['message'] ?? 'Registration failed';
+        messageType.value = 'error';
       }
+    } on TimeoutException catch (e) {
+      message.value = 'Connection timeout. Make sure the backend server is running.';
+      messageType.value = 'error';
+      print('⏱️ Register Timeout: $e');
     } catch (e) {
-      message.value = 'Error: $e';
+      message.value = 'Error: Unable to connect to server. Is it running?';
+      messageType.value = 'error';
+      print('⚠️ Register Exception: $e');
     } finally {
       isLoading.value = false;
     }
@@ -76,11 +214,14 @@ class AuthController extends GetxController {
   void logout() {
     token.value = '';
     user.value = {};
+    box.remove('token');
+    box.remove('user');
     Get.offAllNamed('/login'); // Navigate to login
   }
 
   /// CLEAR MESSAGE
   void clearMessage() {
     message.value = '';
+    messageType.value = '';
   }
 }
