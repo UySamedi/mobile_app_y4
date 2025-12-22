@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import '../services/auth_service.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -223,5 +224,227 @@ class AuthController extends GetxController {
   void clearMessage() {
     message.value = '';
     messageType.value = '';
+  }
+
+  /// FETCH PROFILE - Get full user profile from /users/profile
+  Future<bool> fetchProfile() async {
+    if (token.value.isEmpty) {
+      return false;
+    }
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${token.value}',
+      };
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/users/profile'), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final profileData = data['data'] ?? {};
+        
+        // Update user data with full profile (includes phoneNumber, etc.)
+        user.value = Map<String, dynamic>.from(profileData);
+        
+        // Persist updated user data
+        box.write('user', Map<String, dynamic>.from(user));
+        
+        print('✅ Profile fetched successfully');
+        print('👤 Updated User: $profileData');
+        return true;
+      } else {
+        print('❌ Failed to fetch profile: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('⚠️ Profile fetch error: $e');
+      return false;
+    }
+  }
+
+  /// REQUEST ROLE UPGRADE - Request role upgrade
+  Future<Map<String, dynamic>> requestRoleUpgrade(
+    String requestedRole,
+    String reason,
+  ) async {
+    if (token.value.isEmpty) {
+      return {
+        "success": false,
+        "message": "No authentication token found",
+      };
+    }
+
+    try {
+      final result = await AuthService.requestRoleUpgrade(
+        requestedRole,
+        reason,
+        token.value,
+      );
+
+      if (result['success']) {
+        message.value = result['message'] ?? 'Role upgrade request submitted successfully';
+        messageType.value = 'success';
+        print('✅ Role upgrade request created successfully');
+        return result;
+      } else {
+        message.value = result['message'] ?? 'Failed to submit role upgrade request';
+        messageType.value = 'error';
+        print('❌ Role upgrade request failed: ${result['message']}');
+        return result;
+      }
+    } catch (e) {
+      message.value = 'Error: $e';
+      messageType.value = 'error';
+      print('⚠️ Role upgrade request error: $e');
+      return {
+        "success": false,
+        "message": "Error: $e",
+      };
+    }
+  }
+
+  /// GET MY ROLE UPGRADE REQUESTS - Fetch user's role upgrade requests
+  Future<Map<String, dynamic>> getMyRoleUpgradeRequests() async {
+    if (token.value.isEmpty) {
+      return {
+        "success": false,
+        "message": "No authentication token found",
+        "data": [],
+      };
+    }
+
+    try {
+      final result = await AuthService.getMyRoleUpgradeRequests(token.value);
+
+      if (result['success']) {
+        print('✅ Role upgrade requests fetched successfully');
+        return result;
+      } else {
+        print('❌ Failed to fetch role upgrade requests: ${result['message']}');
+        return result;
+      }
+    } catch (e) {
+      print('⚠️ Get role upgrade requests error: $e');
+      return {
+        "success": false,
+        "message": "Error: $e",
+        "data": [],
+      };
+    }
+  }
+
+  /// GET ADMIN ROLE UPGRADE REQUESTS - Fetch all role upgrade requests for admin
+  Future<Map<String, dynamic>> getAdminRoleUpgradeRequests() async {
+    if (token.value.isEmpty) {
+      return {
+        "success": false,
+        "message": "No authentication token found",
+        "data": [],
+      };
+    }
+
+    try {
+      final result = await AuthService.getAdminRoleUpgradeRequests(token.value);
+
+      if (result['success']) {
+        print('✅ Admin role upgrade requests fetched successfully');
+        return result;
+      } else {
+        print('❌ Failed to fetch admin role upgrade requests: ${result['message']}');
+        return result;
+      }
+    } catch (e) {
+      print('⚠️ Get admin role upgrade requests error: $e');
+      return {
+        "success": false,
+        "message": "Error: $e",
+        "data": [],
+      };
+    }
+  }
+
+  /// APPROVE ROLE UPGRADE REQUEST - Approve a role upgrade request
+  Future<Map<String, dynamic>> approveRoleUpgradeRequest(
+    int requestId,
+    String adminComment,
+  ) async {
+    if (token.value.isEmpty) {
+      return {
+        "success": false,
+        "message": "No authentication token found",
+      };
+    }
+
+    try {
+      final result = await AuthService.approveRoleUpgradeRequest(
+        requestId,
+        adminComment,
+        token.value,
+      );
+
+      if (result['success']) {
+        message.value = result['message'] ?? 'Role upgrade request approved successfully';
+        messageType.value = 'success';
+        print('✅ Role upgrade request approved');
+        return result;
+      } else {
+        message.value = result['message'] ?? 'Failed to approve role upgrade request';
+        messageType.value = 'error';
+        print('❌ Failed to approve: ${result['message']}');
+        return result;
+      }
+    } catch (e) {
+      message.value = 'Error: $e';
+      messageType.value = 'error';
+      print('⚠️ Approve role upgrade request error: $e');
+      return {
+        "success": false,
+        "message": "Error: $e",
+      };
+    }
+  }
+
+  /// REJECT ROLE UPGRADE REQUEST - Reject a role upgrade request
+  Future<Map<String, dynamic>> rejectRoleUpgradeRequest(
+    int requestId,
+    String adminComment,
+  ) async {
+    if (token.value.isEmpty) {
+      return {
+        "success": false,
+        "message": "No authentication token found",
+      };
+    }
+
+    try {
+      final result = await AuthService.rejectRoleUpgradeRequest(
+        requestId,
+        adminComment,
+        token.value,
+      );
+
+      if (result['success']) {
+        message.value = result['message'] ?? 'Role upgrade request rejected successfully';
+        messageType.value = 'success';
+        print('✅ Role upgrade request rejected');
+        return result;
+      } else {
+        message.value = result['message'] ?? 'Failed to reject role upgrade request';
+        messageType.value = 'error';
+        print('❌ Failed to reject: ${result['message']}');
+        return result;
+      }
+    } catch (e) {
+      message.value = 'Error: $e';
+      messageType.value = 'error';
+      print('⚠️ Reject role upgrade request error: $e');
+      return {
+        "success": false,
+        "message": "Error: $e",
+      };
+    }
   }
 }

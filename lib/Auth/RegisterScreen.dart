@@ -20,18 +20,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscure = true;
 
-  InputDecoration _inputDecoration(String hint, IconData icon) => InputDecoration(
-    prefixIcon: Icon(icon, color: Colors.blueAccent),
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-  );
-
   @override
   void dispose() {
     fullName.dispose();
@@ -57,101 +45,142 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: width > 600 ? 500 : width),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 8),
-                  Center(
-                    child: Image.asset('assets/images/login_image.png', height: 140),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person_add_outlined,
+                        size: 50, color: Colors.blueAccent),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 32),
                   const Text(
                     'Create Account',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5),
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Register to get started',
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sign up to get started with your account',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: Colors.black54),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
-                  const SizedBox(height: 20),
-
+                  const SizedBox(height: 40),
                   Form(
                     key: _formKey,
                     child: Column(
                       children: [
-                        TextFormField(
+                        _buildModernTextField(
                           controller: fullName,
-                          decoration: _inputDecoration('Full Name', Icons.person),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your full name' : null,
+                          label: 'Full Name',
+                          hint: 'Enter your full name',
+                          icon: Icons.person_outline,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Please enter your full name'
+                              : null,
                         ),
-                        const SizedBox(height: 14),
-                        TextFormField(
+                        const SizedBox(height: 20),
+                        _buildModernTextField(
                           controller: email,
+                          label: 'Email',
+                          hint: 'Enter your email',
+                          icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: _inputDecoration('Email', Icons.email),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Please enter your email';
-                            final emailRegex = RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                            if (!emailRegex.hasMatch(v.trim())) return 'Enter a valid email';
+                            if (v == null || v.trim().isEmpty)
+                              return 'Please enter your email';
+                            final emailRegex =
+                                RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                            if (!emailRegex.hasMatch(v.trim()))
+                              return 'Enter a valid email';
                             return null;
                           },
                         ),
-                        const SizedBox(height: 14),
-                        TextFormField(
+                        const SizedBox(height: 20),
+                        _buildModernTextField(
                           controller: password,
+                          label: 'Password',
+                          hint: 'Create a password',
+                          icon: Icons.lock_outlined,
                           obscureText: _obscure,
-                          decoration: _inputDecoration('Password', Icons.lock).copyWith(
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                            ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                size: 20),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                            color: Colors.grey[600],
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Please enter a password';
-                            if (v.length < 6) return 'Password must be at least 6 characters';
+                            if (v == null || v.isEmpty)
+                              return 'Please enter a password';
+                            if (v.length < 6)
+                              return 'Password must be at least 6 characters';
                             return null;
                           },
                         ),
-                        const SizedBox(height: 14),
-                        TextFormField(
+                        const SizedBox(height: 20),
+                        _buildModernTextField(
                           controller: phone,
+                          label: 'Phone Number',
+                          hint: 'Enter your phone number',
+                          icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
-                          decoration: _inputDecoration('Phone Number', Icons.phone),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Please enter phone number';
-                            if (v.trim().length < 7) return 'Enter a valid phone number';
+                            if (v == null || v.trim().isEmpty)
+                              return 'Please enter phone number';
+                            if (v.trim().length < 7)
+                              return 'Enter a valid phone number';
                             return null;
                           },
                         ),
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 32),
 
                         Obx(() {
                           return SizedBox(
                             width: double.infinity,
-                            height: 52,
+                            height: 56,
                             child: ElevatedButton(
                               onPressed: auth.isLoading.value ? null : _submit,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blueAccent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                elevation: 0,
                               ),
                               child: auth.isLoading.value
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                  : const Text('Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white, strokeWidth: 2))
+                                  : const Text('Create Account',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
                             ),
                           );
                         }),
-                        
+
                         // Show messages (error or success)
                         Obx(() {
                           if (auth.message.isNotEmpty) {
@@ -160,10 +189,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(auth.message.value),
-                                  backgroundColor: isError ? Colors.red : Colors.green,
+                                  backgroundColor:
+                                      isError ? Colors.red : Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                               );
-                              // clear after showing
                               auth.clearMessage();
                             });
                           }
@@ -172,24 +204,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 32),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Already have an account? "),
+                      Text("Already have an account? ",
+                          style: TextStyle(color: Colors.grey[600])),
                       TextButton(
                         onPressed: () => Get.toNamed('/login'),
-                        child: const Text('Login now', style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                        child: const Text('Sign In',
+                            style: TextStyle(
+                                color: Colors.blueAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, color: Colors.blueAccent, size: 22),
+            suffixIcon: suffixIcon,
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.all(18),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide:
+                  const BorderSide(color: Colors.blueAccent, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
