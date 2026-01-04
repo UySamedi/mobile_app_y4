@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 380,
+                  height: 350,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(left: 20, right: 8),
@@ -82,7 +82,7 @@ class HomeScreen extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            height: 400,
+            height: 300,
             width: double.infinity,
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
@@ -118,34 +118,6 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.navigation,
-                              color: Colors.white, size: 18),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Norway',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Get.to(() => ProfileScreen());
-                        },
-                        child: const CircleAvatar(
-                          backgroundColor: Colors.white24,
-                          child:
-                              Icon(Icons.person_outline, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 40),
                   Text(
                     'Hey, $firstName! Tell us where you want to go',
@@ -154,41 +126,6 @@ class HomeScreen extends StatelessWidget {
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, color: Colors.white, size: 24),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Search places',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            Text(
-                              'Date range • Number of guests',
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
                   ),
                 ],
@@ -227,7 +164,6 @@ class HomeScreen extends StatelessWidget {
           Get.toNamed('/detail', arguments: homeData);
         } catch (e) {
           print('Error navigating to detail: $e');
-          // Fallback: just pass the ID
           Get.toNamed('/detail', arguments: {'id': home.id});
         }
       },
@@ -256,11 +192,20 @@ class HomeScreen extends StatelessWidget {
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.black26,
-                    child: const Icon(Icons.favorite_border,
-                        color: Colors.white, size: 20),
-                  ),
+                  child: Obx(() {
+                    final isFavorited = homeCtrl.favoritedHomes.contains(home);
+                    return GestureDetector(
+                      onTap: () => homeCtrl.toggleFavorite(home),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black26,
+                        child: Icon(
+                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorited ? Colors.red : Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
@@ -316,7 +261,6 @@ class HomeScreen extends StatelessWidget {
           Get.toNamed('/detail', arguments: homeData);
         } catch (e) {
           print('Error navigating to detail: $e');
-          // Fallback: just pass the ID
           Get.toNamed('/detail', arguments: {'id': home.id});
         }
       },
@@ -325,17 +269,39 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: displayImageUrl != null
-                  ? Image.network(
-                      displayImageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildCardPlaceholder(150),
-                    )
-                  : _buildCardPlaceholder(150),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: displayImageUrl != null
+                      ? Image.network(
+                          displayImageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildCardPlaceholder(150),
+                        )
+                      : _buildCardPlaceholder(150),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Obx(() {
+                    final isFavorited = homeCtrl.favoritedHomes.contains(home);
+                    return GestureDetector(
+                      onTap: () => homeCtrl.toggleFavorite(home),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black26,
+                        child: Icon(
+                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorited ? Colors.red : Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -355,19 +321,14 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildPriceDisplay(HomeModel home) {
-    // Get minimum room price from available rooms
     double? minPrice;
     try {
-      // Use the getter from the model
       minPrice = home.minRoomPrice;
-
-      // Also try direct access as fallback
       if (minPrice == null && home.rooms.isNotEmpty) {
         for (var room in home.rooms) {
           if (room is Map<String, dynamic>) {
             final priceValue = room['price'];
             if (priceValue != null) {
-              // Handle both string and numeric prices
               double? price;
               if (priceValue is String) {
                 price = double.tryParse(priceValue);
@@ -385,11 +346,9 @@ class HomeScreen extends StatelessWidget {
         }
       }
     } catch (e) {
-      // If any error occurs, minPrice will remain null and show default
       print('Error parsing room prices: $e');
     }
 
-    // If no price found, show default
     if (minPrice == null) {
       return RichText(
         text: TextSpan(
@@ -408,7 +367,6 @@ class HomeScreen extends StatelessWidget {
       );
     }
 
-    // Calculate total for 3 nights (as shown in the original design)
     final totalPrice = minPrice * 3;
 
     return RichText(

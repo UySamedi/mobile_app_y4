@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'HomeScreen.dart';
 import 'ProfileScreen.dart';
+import 'SavedScreen.dart';
 
 class MainNav extends StatefulWidget {
   const MainNav({super.key});
@@ -15,7 +16,7 @@ class _MainNavState extends State<MainNav> {
   static final List<Widget> _pages = <Widget>[
     HomeScreen(),
     const Center(child: Text('My Orders Screen', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Saved Items Screen', style: TextStyle(fontSize: 24))),
+    const SavedScreen(),
     ProfileScreen(),
   ];
 
@@ -71,9 +72,9 @@ class _MainNavState extends State<MainNav> {
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: Icon(_selectedIndex == 1 ? Icons.confirmation_number : Icons.confirmation_number_outlined),
+                  child: Icon(_selectedIndex == 1 ? Icons.search : Icons.search_outlined),
                 ),
-                label: 'My Orders',
+                label: 'Search',
               ),
               BottomNavigationBarItem(
                 icon: Padding(

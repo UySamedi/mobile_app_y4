@@ -1,6 +1,10 @@
- import 'package:flutter/material.dart';
+
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../models/home_model.dart';
+import 'SavedScreen.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/home_controller.dart';
 import '../services/home_service.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -14,16 +18,19 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   final AuthController auth = Get.find();
+  final HomeController homeCtrl = Get.find();
   Map<String, dynamic>? _homeDetails;
   bool _isLoading = true;
   String _errorMessage = '';
 
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
+  late HomeModel _homeModel;
 
   @override
   void initState() {
     super.initState();
+    _homeModel = HomeModel.fromJson(widget.home);
     _fetchHomeDetails();
   }
 
@@ -124,10 +131,17 @@ class _DetailScreenState extends State<DetailScreen> {
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
             backgroundColor: Colors.white,
-            child: IconButton(
-              icon: const Icon(Icons.ios_share, color: Colors.black, size: 20),
-              onPressed: () {},
-            ),
+            child: Obx(() {
+              final isFavorited = homeCtrl.favoritedHomes.contains(_homeModel);
+              return IconButton(
+                icon: Icon(isFavorited ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorited ? Colors.red : Colors.black, size: 20),
+                onPressed: () {
+                  homeCtrl.toggleFavorite(_homeModel);
+                  Get.to(() => const SavedScreen());
+                },
+              );
+            }),
           ),
         ),
       ],
