@@ -240,7 +240,7 @@ class _CreateRuleScreenState extends State<CreateRuleScreen> {
             onChanged: (value) {
               setState(() => _isActive = value);
             },
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
           ),
         ],
       ),

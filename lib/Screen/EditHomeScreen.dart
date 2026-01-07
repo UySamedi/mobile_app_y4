@@ -28,8 +28,8 @@ class _EditHomeScreenState extends State<EditHomeScreen> {
   bool _isSubmitting = false;
 
   List<String> _existingImages = [];
-  List<XFile> _newImages = [];
-  List<String> _imagesToDelete = [];
+  final List<XFile> _newImages = [];
+  final List<String> _imagesToDelete = [];
 
   @override
   void initState() {

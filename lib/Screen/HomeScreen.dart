@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
 import '../models/home_model.dart';
-import 'ProfileScreen.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
