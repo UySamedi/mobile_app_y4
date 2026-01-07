@@ -15,6 +15,7 @@ import 'Screen/Myhomescreen.dart';
 import 'Screen/RoleUpgradeRequestsScreen.dart';
 import 'Screen/AdminRoleUpgradeRequestsScreen.dart';
 import 'Screen/SplashScreen.dart';
+import 'Screen/onboarding_screen.dart';
 import 'controllers/auth_controller.dart';
 
 void main() async {
@@ -33,9 +34,10 @@ class MyLoginApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Login App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/splash',
+      initialRoute: '/onboarding',
       getPages: [
         GetPage(name: '/splash', page: () => const SplashScreen()),
+        GetPage(name: '/onboarding', page: () => const OnboardingScreen()),
         GetPage(name: '/login', page: () => LoginScreen()),
         GetPage(name: '/register', page: () => RegisterScreen()),
         GetPage(name: '/home', page: () => HomeScreen()),
