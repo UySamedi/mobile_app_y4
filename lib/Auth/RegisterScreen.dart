@@ -103,12 +103,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty)
+                            if (v == null || v.trim().isEmpty) {
                               return 'Please enter your email';
+                            }
                             final emailRegex =
                                 RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                            if (!emailRegex.hasMatch(v.trim()))
+                            if (!emailRegex.hasMatch(v.trim())) {
                               return 'Enter a valid email';
+                            }
                             return null;
                           },
                         ),
@@ -130,10 +132,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: Colors.grey[600],
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Please enter a password';
-                            if (v.length < 6)
+                            }
+                            if (v.length < 6) {
                               return 'Password must be at least 6 characters';
+                            }
                             return null;
                           },
                         ),
@@ -145,10 +149,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty)
+                            if (v == null || v.trim().isEmpty) {
                               return 'Please enter phone number';
-                            if (v.trim().length < 7)
+                            }
+                            if (v.trim().length < 7) {
                               return 'Enter a valid phone number';
+                            }
                             return null;
                           },
                         ),

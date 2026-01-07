@@ -26,7 +26,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final TextEditingController priceCtrl = TextEditingController();
   final TextEditingController capacityCtrl = TextEditingController();
 
-  List<XFile> _pickedImages = [];
+  final List<XFile> _pickedImages = [];
   bool _isAvailable = true;
   int? _selectedRuleId;
   List<dynamic> _rules = [];
@@ -302,10 +302,12 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   icon: Icons.attach_money_outlined,
                   keyboardType: TextInputType.number,
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return 'Please enter price';
-                    if (double.tryParse(v.trim()) == null)
+                    }
+                    if (double.tryParse(v.trim()) == null) {
                       return 'Please enter a valid number';
+                    }
                     return null;
                   },
                 ),
@@ -317,10 +319,12 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   icon: Icons.people_outline,
                   keyboardType: TextInputType.number,
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return 'Please enter capacity';
-                    if (int.tryParse(v.trim()) == null)
+                    }
+                    if (int.tryParse(v.trim()) == null) {
                       return 'Please enter a valid number';
+                    }
                     return null;
                   },
                 ),
@@ -419,7 +423,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           Switch(
             value: _isAvailable,
             onChanged: (value) => setState(() => _isAvailable = value),
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
           ),
         ],
       ),
@@ -446,7 +450,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             border: Border.all(color: Colors.grey.shade200),
           ),
           child: DropdownButtonFormField<int>(
-            value: _selectedRuleId,
+            initialValue: _selectedRuleId,
             isExpanded: true,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.rule_outlined, color: Colors.blueAccent),

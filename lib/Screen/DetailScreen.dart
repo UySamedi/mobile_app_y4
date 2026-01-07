@@ -440,7 +440,7 @@ class _DetailScreenState extends State<DetailScreen> {
               child: Padding(
                   padding: EdgeInsets.all(20), child: Text('No rooms found.')))
         else
-          ...rooms.map((room) => _buildRoomCard(context, room)).toList(),
+          ...rooms.map((room) => _buildRoomCard(context, room)),
       ],
     );
   }
@@ -579,7 +579,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ],
               ),

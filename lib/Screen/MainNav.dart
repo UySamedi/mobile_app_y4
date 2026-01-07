@@ -69,13 +69,7 @@ class _MainNavState extends State<MainNav> {
                 ),
                 label: 'Home',
               ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Icon(_selectedIndex == 1 ? Icons.search : Icons.search_outlined),
-                ),
-                label: 'Search',
-              ),
+              
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: const EdgeInsets.only(bottom: 4),

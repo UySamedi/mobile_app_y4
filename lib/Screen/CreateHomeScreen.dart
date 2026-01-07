@@ -24,7 +24,7 @@ class _CreatehomescreenState extends State<Createhomescreen> {
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController addressCtrl = TextEditingController();
   final TextEditingController descriptionCtrl = TextEditingController();
-  List<XFile> _pickedImages = [];
+  final List<XFile> _pickedImages = [];
   bool _isSubmitting = false;
 
   @override

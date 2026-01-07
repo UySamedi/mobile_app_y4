@@ -6,7 +6,7 @@ import 'RoleUpgradeRequestsScreen.dart';
 import 'AdminRoleUpgradeRequestsScreen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({super.key});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -158,14 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       },
                     ),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('More'),
-                  const SizedBox(height: 16),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Support',
-                    onTap: () {},
-                  ),
+                  
                   const SizedBox(height: 40),
                   _buildLogoutButton(),
                   const SizedBox(height: 40),
