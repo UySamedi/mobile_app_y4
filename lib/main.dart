@@ -17,16 +17,40 @@ import 'Screen/AdminRoleUpgradeRequestsScreen.dart';
 import 'Screen/SplashScreen.dart';
 import 'Screen/onboarding_screen.dart';
 import 'controllers/auth_controller.dart';
+import 'controllers/home_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   Get.put(AuthController());
-  runApp(const MyLoginApp());
+  Get.put(HomeController());
+
+  // Decide initial route based on whether onboarding was completed and token validity
+  final authController = Get.find<AuthController>();
+  final box = GetStorage();
+  final onboardingDone = box.read('onboarding') ?? false;
+
+  bool tokenValid = false;
+  if (onboardingDone) {
+    // validateToken will restore token if valid and may perform offline-safe checks
+    tokenValid = await authController.validateToken();
+  }
+
+  String initialRoute;
+  if (onboardingDone == false) {
+    initialRoute = '/onboarding';
+  } else if (tokenValid && authController.token.value.isNotEmpty) {
+    initialRoute = '/main';
+  } else {
+    initialRoute = '/login';
+  }
+
+  runApp(MyLoginApp(initialRoute: initialRoute));
 }
 
 class MyLoginApp extends StatelessWidget {
-  const MyLoginApp({super.key});
+  final String initialRoute;
+  const MyLoginApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +58,7 @@ class MyLoginApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Login App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/onboarding',
+      initialRoute: initialRoute,
       getPages: [
         GetPage(name: '/splash', page: () => const SplashScreen()),
         GetPage(name: '/onboarding', page: () => const OnboardingScreen()),

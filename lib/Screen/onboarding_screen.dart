@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import '../Auth/LoginScreen.dart';
 import 'MainNav.dart';
@@ -12,41 +13,34 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  PageController controller = PageController();
-  int currentPage = 0;
+  Future<void> _completeOnboardingAndNavigate(BuildContext context) async {
+    final box = GetStorage();
+    await box.write('onboarding', true);
 
-  @override
-  void initState() {
-    controller.addListener(() {
-      setState(() {
-        currentPage = controller.page?.round() ?? 0;
-      });
-    });
-    super.initState();
+    // If there's already a token stored, go to main; otherwise go to login
+    final token = box.read('token') ?? '';
+    if (token != null && token.toString().isNotEmpty) {
+      // token exists - navigate to main
+      Get.offAll(() => const MainNav());
+    } else {
+      Get.offAll(() => LoginScreen());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show a single onboarding page (matching the design: large illustration, title, subtitle, Start Now button)
     return Scaffold(
-      body: PageView(
-        controller: controller,
-        children: [
-          HomePageTemplate(
-            activePage: currentPage,
-            title: "Let's Find Peace with Comfort",
-            imagePath: "assets/images/page1.png",
-          ),
-          HomePageTemplate(
-            activePage: currentPage,
-            title: "Let's Find Peace with Comfort",
-            imagePath: "assets/images/page2.png",
-          ),
-          HomePageTemplate(
-            activePage: currentPage,
-            title: "Let's Find Peace with Comfort",
-            imagePath: "assets/images/page1.png",
-          ),
-        ],
+      body: SafeArea(
+        child: HomePageTemplate(
+          controller: null,
+          activePage: 2,
+          pageIndex: 2,
+          title: "Find Your Perfect Room",
+          subtitle:
+              "Browse, compare, and book rooms near you in just a few taps. Comfort and convenience, made simple.",
+          imagePath: "assets/images/onboarding_img.png",
+        ),
       ),
     );
   }
@@ -60,14 +54,20 @@ class Constants {
 
 class HomePageTemplate extends StatelessWidget {
   final int activePage;
+  final int pageIndex;
+  final PageController? controller;
   final String imagePath;
   final String title;
+  final String subtitle;
 
   const HomePageTemplate(
       {super.key,
       required this.activePage,
+      required this.pageIndex,
+      this.controller,
       required this.imagePath,
-      required this.title});
+      required this.title,
+      required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +77,41 @@ class HomePageTemplate extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage(
-                    imagePath,
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage(imagePath),
+                    ),
                   ),
                 ),
-              ),
+                // Top small progress indicators (centered)
+                Positioned(
+                  top: 40,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      3,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: index == activePage ? 24 : 10,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: index == activePage
+                              ? Constants.primaryColor
+                              : Constants.highlightColor2,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
@@ -104,15 +130,31 @@ class HomePageTemplate extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(
-                  height: 15.0,
+                  height: 12.0,
                 ),
-                PageIndicator(activePage: activePage),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    color: Color.fromRGBO(64, 74, 106, 1),
+                  ),
+                ),
                 const SizedBox(
-                  height: 50.0,
+                  height: 30.0,
                 ),
                 PrimaryButton(
-                  text: "Get Started",
-                  onPressed: () => Get.offAll(() => const MainNav()),
+                  text: pageIndex == 2 ? "Start Now" : "Next",
+                  onPressed: () {
+                    if (pageIndex < 2) {
+                      controller?.animateToPage(pageIndex + 1,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut);
+                    } else {
+                      // Call the parent's onboarding completion helper
+                      final state = context.findAncestorStateOfType<_OnboardingScreenState>();
+                      state?._completeOnboardingAndNavigate(context);
+                    }
+                  },
                 )
               ],
             ),

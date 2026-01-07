@@ -15,7 +15,6 @@ class _MainNavState extends State<MainNav> {
 
   static final List<Widget> _pages = <Widget>[
     HomeScreen(),
-    const Center(child: Text('My Orders Screen', style: TextStyle(fontSize: 24))),
     const SavedScreen(),
     ProfileScreen(),
   ];
@@ -39,7 +38,7 @@ class _MainNavState extends State<MainNav> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Color.fromRGBO(0, 0, 0, 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -69,18 +68,17 @@ class _MainNavState extends State<MainNav> {
                 ),
                 label: 'Home',
               ),
-              
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: Icon(_selectedIndex == 2 ? Icons.bookmark : Icons.bookmark_add_outlined),
+                  child: Icon(_selectedIndex == 1 ? Icons.bookmark : Icons.bookmark_add_outlined),
                 ),
                 label: 'Save',
               ),
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: Icon(_selectedIndex == 3 ? Icons.person : Icons.person_outline),
+                  child: Icon(_selectedIndex == 2 ? Icons.person : Icons.person_outline),
                 ),
                 label: 'Profile',
               ),
