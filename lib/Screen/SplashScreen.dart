@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../controllers/auth_controller.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -38,14 +39,17 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            FlutterLogo(size: 96),
-            SizedBox(height: 20),
-            CircularProgressIndicator(),
+          children: [
+            SvgPicture.asset(
+              'assets/icon/home.svg',
+              height: 96,
+              width: 96,
+            ),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(),
           ],
         ),
       ),
     );
   }
 }
-
