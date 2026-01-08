@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/home_model.dart';
@@ -591,32 +590,7 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomAction(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4))
-        ],
-      ),
-      child: SafeArea(
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 56),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 0,
-          ),
-          child: const Text('Contact for Inquiry',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        ),
-      ),
-    );
+    // Removed the bottom "Contact for Inquiry" button — return an empty widget instead
+    return const SizedBox.shrink();
   }
 }

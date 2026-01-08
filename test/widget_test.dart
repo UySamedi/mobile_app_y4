@@ -12,7 +12,7 @@ import 'package:rental_room_api/main.dart';
 void main() {
   testWidgets('App builds', (WidgetTester tester) async {
     // Build the app and trigger a frame.
-    await tester.pumpWidget(MyLoginApp());
+    await tester.pumpWidget(MyLoginApp(initialRoute: '',));
 
     // Verify the app builds and the login screen is present.
     expect(find.byType(MyLoginApp), findsOneWidget);

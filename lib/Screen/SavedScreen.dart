@@ -81,18 +81,41 @@ class SavedScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            home.name,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            home.address,
-                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          // Row with title/address and an Unsave button
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      home.name,
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      home.address,
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Unsave button
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                tooltip: 'Remove from saved',
+                                onPressed: () {
+                                  // toggleFavorite existing method will remove the item
+                                  homeCtrl.toggleFavorite(home);
+                                  Get.snackbar('Removed', 'Item removed from saved', snackPosition: SnackPosition.BOTTOM);
+                                },
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                         ],

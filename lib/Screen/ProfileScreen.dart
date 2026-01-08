@@ -125,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (canCreate)
                     _buildMenuItem(
                       icon: Icons.add_business_outlined,
-                      title: 'Create Listing',
+                      title: 'Create Home',
                       subtitle: 'Add a new property',
                       onTap: () => Get.toNamed('/create-home'),
                     ),
